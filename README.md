@@ -65,4 +65,6 @@ Options: `--app` (Edge/Chrome window), `--browser` (normal browser tab), `--port
 
 Idea and testing: haunetal1990. The GMT reader is based on the rFactor 2 importer add-on for Blender by haunetal1990.
 
+Released under the MIT License, see [LICENSE](LICENSE).
+
 rFactor 2 is a trademark of its respective owners. This project is not affiliated with or endorsed by them.
