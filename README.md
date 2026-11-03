@@ -97,7 +97,7 @@ The viewer opens in its own program window – no browser needed.
 
 ## Credits
 
-Idea and testing: haunetal1990. The GMT reader is based on the rFactor 2 importer add-on for Blender by haunetal1990.
+The GMT reader comes from my rFactor 2 importer add-on for Blender.
 
 Released under the MIT License, see [LICENSE](LICENSE).
 
