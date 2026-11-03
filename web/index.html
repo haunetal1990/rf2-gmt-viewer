@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rF2 GMT Viewer</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="gl" tabindex="0" aria-label="3D-Ansicht"></canvas>
+
+<!-- start screen -->
+<section id="start" class="start">
+  <div class="start-card">
+    <div class="row between"><div class="brand"><span class="mark"></span><span>rF2 GMT Viewer</span></div>
+      <div class="seg lang-seg" role="group" aria-label="Sprache"><button data-lang="de">DE</button><button data-lang="en">EN</button></div></div>
+    <h1>Was möchtest du ansehen?</h1>
+    <p class="muted">Einzelne GMT-Dateien, einen Ordner mit GMT/JSON/DDS, einen ganzen Mod-Ordner oder ein Auto über seine VEH-Datei.</p>
+    <div class="start-actions">
+      <button class="big-btn" data-browse="folder"><span class="ico" data-icon="folder"></span><span><b>Ordner</b><small>GMT, JSON, DDS – mit Unterordnern</small></span></button>
+      <button class="big-btn" data-browse="veh"><span class="ico" data-icon="car"></span><span><b>VEH-Datei</b><small>lädt Spinner-GEN, sonst Graphics-GEN</small></span></button>
+      <button class="big-btn" data-browse="gmt"><span class="ico" data-icon="cube"></span><span><b>Einzelne GMT</b><small>z. B. ein Reifen oder eine Felge</small></span></button>
+    </div>
+    <form id="startForm" class="path-row">
+      <label class="sr" for="startPath">Pfad</label>
+      <input id="startPath" placeholder="Pfad einfügen, z. B. E:\…\ModDev\Vehicles\DLMF1_2027\teams\DLM27_F_0.veh" autocomplete="off">
+      <button class="btn primary" type="submit">Öffnen</button>
+    </form>
+    <div id="recent" class="recent"></div>
+    <div class="credit">Idea from haunetal1990</div>
+  </div>
+</section>
+
+<!-- source / parts panel -->
+<aside id="srcPanel" class="panel src hidden">
+  <header class="src-head">
+    <span class="mark"></span>
+    <div class="grow min0">
+      <div id="srcTitle" class="title ellipsis">–</div>
+      <div id="srcSub" class="sub ellipsis">–</div>
+    </div>
+    <button class="icon-btn" id="btnCheck" aria-label="Mod prüfen" title="Mod prüfen: fehlende Dateien aus VEH, HDV, TBC, GEN und fehlende Texturen"><span data-icon="check"></span></button>
+    <button class="icon-btn" id="btnOpen" aria-label="Andere Quelle öffnen" title="Andere Quelle öffnen"><span data-icon="folder"></span></button>
+    <button class="icon-btn" id="btnSrcCollapse" aria-label="Liste ein-/ausklappen" title="Liste ein-/ausklappen"><span data-icon="chev"></span></button>
+  </header>
+  <div class="src-body" id="srcBody">
+    <label class="search"><span data-icon="search"></span><input id="partFilter" placeholder="Teile filtern"></label>
+    <div id="livery" class="livery hidden"></div>
+    <div id="partList" class="part-list"></div>
+    <div id="upgrades" class="upgrades hidden"></div>
+    <div id="vehList" class="veh-list hidden"></div>
+    <div id="warnings" class="warnings hidden"></div>
+    <footer class="src-foot">
+      <button class="chip-btn" id="btnAll">Alle</button>
+      <button class="chip-btn" id="btnNone">Keine</button>
+      <button class="chip-btn" id="btnIsolate" title="Nur das ausgewählte Teil zeigen">Isolieren</button>
+      <span class="grow"></span>
+      <button class="chip-btn hidden" id="btnGenSave" title="Gelöschte, geänderte und hineingezogene GMT in die GEN schreiben" disabled>GEN speichern</button>
+    </footer>
+  </div>
+</aside>
+
+<!-- material panel -->
+<aside id="matPanel" class="panel mat hidden">
+  <div id="matEmpty" class="mat-empty">
+    <span data-icon="cursor"></span>
+    <p>Klick ein Teil im 3D-Fenster oder in der Liste an, um sein Material zu bearbeiten.</p>
+  </div>
+  <div id="matBody" class="hidden">
+    <header class="mat-head">
+      <div class="row between">
+        <span id="matPart" class="sub ellipsis">–</span>
+        <button class="icon-btn small" id="btnMatClose" aria-label="Auswahl aufheben"><span data-icon="x"></span></button>
+      </div>
+      <div id="matAnim" class="anim-row hidden"></div>
+      <div id="matPills" class="pills"></div>
+      <div id="matName" class="title mat-name">–</div>
+      <div class="row gap8 shader-row"><span id="matShader" class="tag accent-tag">–</span><span id="matFamily" class="tag">–</span></div>
+      <div id="matFile" class="file-row"></div>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="params" class="on">Parameter</button>
+        <button role="tab" data-tab="tex">Texturen</button>
+        <button role="tab" data-tab="flags">Flags</button>
+        <button role="tab" data-tab="json">JSON</button>
+      </nav>
+    </header>
+    <div id="matScroll" class="mat-scroll">
+      <div id="matMirror" class="tab-page mat-mirror hidden"></div>
+      <div id="tabParams" class="tab-page"></div>
+      <div id="tabTex" class="tab-page hidden"></div>
+      <div id="tabFlags" class="tab-page hidden"></div>
+      <div id="tabJson" class="tab-page hidden">
+        <textarea id="jsonText" spellcheck="false" aria-label="Material-JSON"></textarea>
+        <div class="row gap8"><button class="btn" id="btnJsonApply">Übernehmen</button><span id="jsonErr" class="err small"></span></div>
+      </div>
+    </div>
+    <footer class="mat-foot">
+      <span id="liveDot" class="dot ok"></span><span id="liveText" class="small muted grow ellipsis">Live – Änderung sofort sichtbar</span>
+      <label class="toggle small" title="Änderungen automatisch in die JSON schreiben"><input type="checkbox" id="autoSave"><span>Auto</span></label>
+      <button class="btn primary" id="btnSave" disabled>Speichern</button>
+    </footer>
+  </div>
+</aside>
+
+<!-- camera panel (.cam) -->
+<aside id="camPanel" class="panel mat cam hidden">
+  <header class="mat-head">
+    <div class="row between gap8">
+      <span class="title">Kamera</span>
+      <button class="icon-btn small" id="btnCamClose" aria-label="Kamera-Panel schließen"><span data-icon="x"></span></button>
+    </div>
+    <div id="camQuick" class="cam-quick hidden"></div>
+    <label class="sr" for="camFile">CAM-Datei</label>
+    <select id="camFile" class="sel cam-file"></select>
+    <div id="camPills" class="pills"></div>
+    <div class="row gap8 cam-actions">
+      <button class="btn grow" id="btnCamLook">Durch diese Kamera sehen</button>
+      <button class="btn grow" id="btnCamGrab" title="Position und Blickrichtung der freien Ansicht in diese Kamera übernehmen">Ansicht übernehmen</button>
+    </div>
+    <div id="camNote" class="small muted"></div>
+  </header>
+  <div id="camScroll" class="mat-scroll"><div id="camEdit" class="tab-page"></div></div>
+  <footer class="mat-foot">
+    <span id="camDot" class="dot ok"></span><span id="camText" class="small muted grow ellipsis">Live – Datei wird überwacht</span>
+    <button class="btn primary" id="btnCamSave" disabled>Speichern</button>
+  </footer>
+</aside>
+
+<!-- cockpit displays -->
+<aside id="dashPanel" class="panel mat hidden">
+  <header class="mat-head">
+    <div class="row between gap8">
+      <span class="title">Display</span>
+      <button class="icon-btn small" id="btnDashClose" aria-label="Display-Panel schließen"><span data-icon="x"></span></button>
+    </div>
+    <div id="dashFile" class="mono small muted" style="margin:6px 0 10px"></div>
+  </header>
+  <div class="mat-scroll"><div id="dashEdit" class="tab-page"></div></div>
+  <footer class="mat-foot">
+    <span id="dashDot" class="dot ok"></span><span id="dashText" class="small muted grow ellipsis">Live</span>
+    <button class="btn primary" id="btnDashSave" disabled>Speichern</button>
+  </footer>
+</aside>
+
+<!-- tyre physics (TGM) -->
+<aside id="tgmPanel" class="panel mat tgm hidden">
+  <header class="mat-head">
+    <div class="row between gap8">
+      <span class="title">Reifenphysik (TGM)</span>
+      <span class="row gap8">
+        <button class="icon-btn small" id="btnTgmFocus" aria-label="Fokus auf das Rad" title="Fokus auf das Rad"><span data-icon="focus"></span></button>
+        <button class="icon-btn small" id="btnTgmCollapse" aria-label="Panel ein-/ausklappen" title="Panel ein-/ausklappen"><span data-icon="chev"></span></button>
+        <button class="icon-btn small" id="btnTgmClose" aria-label="TGM-Panel schließen"><span data-icon="x"></span></button>
+      </span>
+    </div>
+    <div id="tgmSrc" class="mono small muted ellipsis" style="margin-top:4px"></div>
+  </header>
+  <div id="tgmScroll" class="mat-scroll">
+    <div class="tab-page">
+      <label class="field" id="tgmCompoundRow"><span>Mischung (TBC)</span><select id="tgmCompound" class="sel"></select></label>
+      <div id="tgmWheels" class="pills"></div>
+      <div class="field"><span id="tgmFileLbl">TGM</span>
+        <div class="row gap8"><select id="tgmFile" class="sel grow mono"></select><button class="icon-btn" id="btnTgmReload" aria-label="TGM-Dateien neu einlesen (Änderungen verwerfen)" title="TGM-Dateien neu einlesen (Änderungen verwerfen)"><span data-icon="refresh"></span></button><button class="btn" id="btnTgmBrowse" title="TGM-Datei wählen">Datei …</button></div></div>
+      <div class="field"><span>Farbe</span>
+        <div class="seg" id="tgmColor"><button data-c="zone" title="Ring (Gürtel) / Übergang / Seitenwand / Wulst (RingAndRim)">Zone</button><button data-c="thick" title="Geometry: Dicke">Dicke</button><button data-c="tread" title="TreadDepth">Profil</button><button data-c="plies" title="Anzahl PlyParams">Lagen</button><button data-c="fit" title="Abstand zur Außenkontur des Reifen-GMT">Abweichung</button></div></div>
+      <div class="tgm-opts">
+        <label class="toggle"><input type="checkbox" id="tgmInner"><span>Innenseite</span></label>
+        <label class="toggle" title="TBC Radius (weiß) und Rim (grau)"><input type="checkbox" id="tgmRefs"><span>TBC-Referenzen</span></label>
+        <label class="toggle" title="Seite der TGM spiegeln, falls +x im Spiel zur Fahrzeugmitte zeigt"><input type="checkbox" id="tgmFlip"><span>+x zeigt nach innen</span></label>
+        <label class="toggle" title="Beim Ziehen eines Reglers oder Punkts: nur Reifen + Felge dieses Rads (Linien im Mesh verschwinden) – beim Loslassen sind alle Teile wieder da"><input type="checkbox" id="tgmPreview"><span>Beim Ziehen nur dieses Rad</span></label>
+      </div>
+      <label class="field"><span class="row between"><span>Speichen</span><output id="oTgmSpokes">24</output></span><input type="range" id="tgmSpokes" min="0" max="72" step="1" value="24"></label>
+      <div id="tgmSection" class="tgm-section"></div>
+      <div id="tgmFit"></div>
+      <div id="tgmNode" class="tgm-node"></div>
+      <div id="tgmWarn" class="note warn-note hidden">Geometry geändert: Die [QuasiStaticAnalysis]- und [LookupV2]-Tabellen passen danach nicht mehr – die TGM muss im TTool neu berechnet werden.</div>
+      <div id="tgmEdit" class="tab-page" style="padding:0"></div>
+    </div>
+  </div>
+  <footer class="mat-foot">
+    <span id="tgmDot" class="dot ok"></span><span id="tgmText" class="small muted grow ellipsis">Live – TGM wird überwacht</span>
+    <button class="btn primary" id="btnTgmSave" disabled>Speichern</button>
+  </footer>
+</aside>
+
+<!-- toolbar -->
+<nav id="toolbar" class="toolbar hidden" aria-label="Ansicht">
+  <button class="tb on" id="tbFocus" title="Kamera auf Auswahl (F oder Numpad ,)"><span data-icon="focus"></span>Fokus</button>
+  <button class="tb on" id="tbOrbit" title="Orbit: links ziehen drehen, rechts verschieben, Rad oder Strg + links ziehen zoomen, Numpad +/− zoomen">Orbit</button>
+  <button class="tb" id="tbFly" title="Frei: rechte Maustaste halten + WASD/QE, Shift schnell – Klick öffnet Tempo, Exit-Taste und Vollbild ohne Menüs">Frei</button>
+  <span class="sep"></span>
+  <button class="tb hidden" id="tbAnim" title="Textur-Animationen abspielen / pausieren (Leertaste)"><span data-icon="play"></span>Animation</button>
+  <button class="tb" id="tbWire" title="Drahtgitter (Z)">Drahtgitter</button>
+  <button class="tb" id="tbFaces" title="Face Orientation wie in rFactor 2: nur gebaute Faces sichtbar, Rückseiten durchsichtig (außer CUBEMAT_TWOSIDED) – (B)">Faces</button>
+  <button class="tb" id="tbLight" title="Licht & Umgebung">Licht</button>
+  <button class="tb hidden" id="tbDash" title="Lenkrad-/Cockpit-Displays aus der cockpitinfo">Display</button>
+  <button class="tb hidden" id="tbCam" title="Kameras aus der .cam-Datei ansehen und anpassen">Kamera</button>
+  <button class="tb hidden" id="tbTgm" title="Reifenphysik (TGM) als farbiges Drahtgitter an den Rädern">TGM</button>
+  <button class="tb" id="tbShot" title="Screenshot als PNG">Screenshot</button>
+</nav>
+
+<div id="lightPop" class="panel pop hidden">
+  <div class="pop-title">Licht &amp; Umgebung</div>
+  <div class="seg" id="envSeg"><button data-env="0" class="on">Himmel</button><button data-env="1">Studio</button><button data-env="2">Neutral</button><button data-env="3" title="Himmel, Sonne und Nacht wie in rFactor 2 (Ort, Datum, Uhrzeit, Wetter)">rF2</button><button data-env="4" id="envRoom" class="hidden" title="Showroom aus …\ModDev\Showroom bzw. …\Installed\Showroom">Showroom</button></div>
+  <div id="roomBox" class="hidden">
+    <label class="field"><span>Showroom</span><select id="roomSel" class="sel"></select></label>
+    <div id="roomInfo" class="small muted" style="margin:6px 0 4px;line-height:1.45"></div>
+  </div>
+  <div id="skyBox" class="hidden">
+    <label class="field"><span class="row between"><span>Uhrzeit</span><output id="oTime">14:00</output></span><input type="range" id="skyTime" min="0" max="24" step="0.0833" value="14"></label>
+    <div class="row gap8 sky-row"><button class="chip-btn" id="skyPlay" title="Uhrzeit laufen lassen – Geschwindigkeit = Time Scale (1.0 = Echtzeit, 3600 = 1 Stunde pro Sekunde)">Zeit läuft</button><input type="date" id="skyDate" class="sel grow" aria-label="Datum"></div>
+    <label class="field"><span>Wetter</span><select id="skyWeather" class="sel"></select></label>
+    <details id="twBar" class="twbar" open><summary>Time / Location / Fog</summary><div id="twRows"></div></details>
+    <label class="field"><span class="row between"><span>Nordrichtung</span><output id="oNorth">0°</output></span><input type="range" id="skyNorth" min="-180" max="180" value="0"></label>
+    <button class="btn" id="skyGdb" style="width:100%">Ort aus Strecken-GDB / MAS …</button>
+    <div id="skyInfo" class="small muted mono" style="margin-top:6px"></div>
+  </div>
+  <div id="sunBox">
+  <label class="field"><span class="row between"><span>Sonne – Richtung</span><output id="oAz">35°</output></span><input type="range" id="sunAz" min="0" max="360" value="35"></label>
+  <label class="field"><span class="row between"><span>Sonne – Höhe</span><output id="oEl">40°</output></span><input type="range" id="sunEl" min="2" max="90" value="40"></label>
+  </div>
+  <label class="field"><span class="row between"><span>Belichtung</span><output id="oEx">1.00</output></span><input type="range" id="expo" min="0.2" max="3" step="0.01" value="1"></label>
+  <label class="field"><span class="row between"><span>Umgebungslicht</span><output id="oAmb">1.00</output></span><input type="range" id="amb" min="0" max="2" step="0.01" value="1"></label>
+  <label class="toggle"><input type="checkbox" id="optShadow" checked><span>Schatten</span></label>
+  <label class="field" title="Regentropfen auf Windschutzscheibe (L2Windscreen*) und Karosserie (L2IBLCarBody) - die Tropfen selbst berechnet das Spiel zur Laufzeit, hier ein festes Tropfenmuster"><span class="row between"><span>Regen / Nässe</span><output id="oRain">0 %</output></span><input type="range" id="rainAmt" min="0" max="1" step="0.01" value="0"></label>
+  <div id="carLightBox" class="hidden">
+    <div class="small muted" style="margin-bottom:4px">Fahrzeuglichter (GEN)</div>
+    <div class="light-grid">
+      <label class="toggle"><input type="checkbox" data-light="head"><span>Scheinwerfer</span></label>
+      <label class="toggle"><input type="checkbox" data-light="brake"><span>Bremslicht</span></label>
+      <label class="toggle"><input type="checkbox" data-light="rain"><span>Regenlicht</span></label>
+      <label class="toggle"><input type="checkbox" data-light="reverse"><span>Rückfahrlicht</span></label>
+      <label class="toggle"><input type="checkbox" data-light="warning"><span>Warnlicht</span></label>
+    </div>
+  </div>
+  <label class="toggle"><input type="checkbox" id="optGrid" checked><span>Bodenraster</span></label>
+  <label class="toggle"><input type="checkbox" id="optCull"><span>Rückseiten ausblenden</span></label>
+  <div class="row between" style="margin-top:6px"><span>Sprache</span>
+    <div class="seg lang-seg" role="group" aria-label="Sprache"><button data-lang="de">DE</button><button data-lang="en">EN</button></div></div>
+</div>
+
+<canvas id="mirrorHud" class="mirror-hud hidden" width="1024" height="256" aria-label="Rückspiegel"></canvas>
+<div id="stats" class="stats hidden"></div>
+
+<!-- browse modal -->
+<div id="browse" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="browseTitle">
+  <div class="modal-card">
+    <header class="row between">
+      <span id="browseTitle" class="title">Öffnen</span>
+      <button class="icon-btn" id="btnBrowseClose" aria-label="Schließen"><span data-icon="x"></span></button>
+    </header>
+    <form id="browseForm" class="path-row">
+      <button type="button" class="icon-btn" id="btnUp" aria-label="Übergeordneter Ordner"><span data-icon="up"></span></button>
+      <label class="sr" for="browsePath">Pfad</label>
+      <input id="browsePath" autocomplete="off">
+      <button class="btn" type="submit">Gehe zu</button>
+    </form>
+    <div id="drives" class="drives"></div>
+    <div id="browseList" class="browse-list"></div>
+    <footer class="row between">
+      <span id="browseHint" class="small muted">Datei anklicken öffnet sie direkt.</span>
+      <button class="btn primary" id="btnOpenHere">Diesen Ordner öffnen</button>
+    </footer>
+  </div>
+</div>
+
+<div id="loading" class="loading hidden"><div class="spinner"></div><span id="loadingText">Lade …</span></div>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="i18n.js"></script>
+<script src="dds.js"></script>
+<script src="shaders_gfx.js"></script>
+<script src="sky.js"></script>
+<script src="material.js"></script>
+<script src="renderer.js"></script>
+<script src="app.js"></script>
+<script src="edit.js"></script>
+<script src="tgm.js"></script>
+<script src="clearance.js"></script>
+<script src="freecam.js"></script>
+<script src="modcheck.js"></script>
+<script src="history.js"></script>
+</body>
+</html>
