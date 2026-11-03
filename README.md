@@ -42,10 +42,7 @@ Then double-click `start_viewer.bat`, or drag a `.veh`, `.gen`, `.gmt` or a fold
 python rf2_gmt_viewer.py "E:\...\ModDev\Vehicles\MyCar\teams\MyCar_01.veh"
 ```
 
-The viewer opens in its own window (it uses the WebView2 runtime that comes with Windows). If that does not work it
-falls back to an Edge or Chrome app window.
-
-Options: `--app` (Edge/Chrome window), `--browser` (normal browser tab), `--port 8765`.
+The viewer opens in its own program window – no browser needed.
 
 ## Controls
 
@@ -93,6 +90,9 @@ Options: `--app` (Edge/Chrome window), `--browser` (normal browser tab), `--port
 
 * JSON and HDV files get a `.bak` copy the first time they are saved
 * Encrypted archives (DLC, LMU) can't be opened
+* If the program window ever fails to open (e.g. the WebView2 runtime is missing on an older Windows), the viewer
+  falls back to an Edge or Chrome window by itself. You can also force this with `--app`, or use `--browser` for a
+  normal browser tab.
 * Clearance results are a geometric check of your suspension and car meshes – always confirm in the game
 
 ## Credits
