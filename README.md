@@ -95,9 +95,7 @@ The viewer opens in its own program window – no browser needed.
   normal browser tab.
 * Clearance results are a geometric check of your suspension and car meshes – always confirm in the game
 
-## Credits
-
-The GMT reader comes from my rFactor 2 importer add-on for Blender.
+##
 
 Released under the MIT License, see [LICENSE](LICENSE).
 
