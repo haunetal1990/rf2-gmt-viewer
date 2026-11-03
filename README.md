@@ -49,11 +49,45 @@ Options: `--app` (Edge/Chrome window), `--browser` (normal browser tab), `--port
 
 ## Controls
 
-* **Orbit**: left drag = rotate, right drag or Shift + left = pan, wheel = zoom
-* **Free**: hold a mouse button and look around, WASD to move, Q/E down/up, Shift fast, Ctrl slow
-* **F** focus on selection, **Z** wire frame, **B** face orientation, **1 / 2** orbit / free
-* **Ctrl+Z / Ctrl+Y** undo / redo, **Ctrl+S** save, **F11** full screen
-* Click a part to edit its material, double-click to focus it
+**Mouse**
+
+* **Orbit**: left drag = rotate, right drag or Shift + left drag = pan, wheel = zoom, Ctrl + left drag = zoom
+* **Free**: hold the right (or left) mouse button and look around, wheel = move forward / back
+* Click a part to edit its material, double-click to focus it, right-click for more options
+
+**Keyboard**
+
+| Key | Action |
+|---|---|
+| `Ctrl+Z` | Undo |
+| `Ctrl+Y` / `Ctrl+Shift+Z` | Redo |
+| `Ctrl+S` | Save (material JSON, or the TGM in the tyre editor) |
+| `F11` | Full screen on / off |
+| `F` / `Numpad ,` | Focus on the selected part (or the whole car) |
+| `+` / `-` (also Numpad) | Zoom in / out |
+| `1` / `2` | Orbit / Free camera |
+| `W A S D` / arrow keys | Free camera: move |
+| `Q` / `E` (or `Page Down` / `Page Up`) | Free camera: down / up |
+| `Shift` / `Ctrl` (held) | Free camera: fast / slow |
+| `Z` | Wire frame |
+| `B` | Faces (face orientation like in rF2) |
+| `Space` | Play / pause texture animations |
+| `Esc` | Clear the selection, close the open dialog or panel |
+
+**Tyre cross-section (TGM editor)**
+
+| Key / mouse | Action |
+|---|---|
+| Double-click the section | Open it full screen |
+| Click / Shift + click | Select a point / add to or remove from the selection |
+| Drag on empty space | Select points with a frame |
+| `Ctrl+A` | Select all points |
+| `Alt` (held while dragging) | Snapping on / off for the moment |
+| Ctrl + left drag | Zoom (full screen) |
+| Right or middle drag | Pan (full screen) |
+| `Esc` | Leave full screen |
+
+**Full screen without menus** (Free camera): leave with `Esc` or the key you picked in the Free camera settings.
 
 ## Good to know
 
