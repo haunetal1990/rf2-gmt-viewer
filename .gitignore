@@ -1,8 +1,0 @@
-__pycache__/
-*.pyc
-*.bak
-*.log
-.vscode/
-.idea/
-Thumbs.db
-desktop.ini
