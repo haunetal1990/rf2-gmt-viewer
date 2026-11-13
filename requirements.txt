@@ -1,2 +1,0 @@
-numpy
-pillow        # optional: TGA-Texturen (DDS-Fallback hat einen eigenen Decoder)
