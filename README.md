@@ -101,4 +101,8 @@ The shading closely follows the rF2 shaders, but this is not the gMotor engine.
 
 Released under the MIT License, see [LICENSE](LICENSE).
 
+## Topics
+[Overtake Forum](https://www.overtake.gg/downloads/rf2-gmt-viewer.88391/)<br />
+[Studio397 Forum](https://forum.studio-397.com/index.php?threads/blender-plugins-from-me.73647/)
+
 rFactor 2 is a trademark of its respective owners. This project is not affiliated with or endorsed by them.
